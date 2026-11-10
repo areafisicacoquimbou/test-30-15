@@ -192,12 +192,13 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 <div class="ov" id="kpOv"><div class="sheet">
   <div class="kpname" id="kpName"></div>
   <div class="kpsub" id="kpSub"></div>
-  <div class="disp ph" id="kpDisp">Etapa</div>
+  <div class="disp ph" id="kpDisp">km/h</div>
   <div class="keys" id="keys">
     <button>1</button><button>2</button><button>3</button>
     <button>4</button><button>5</button><button>6</button>
     <button>7</button><button>8</button><button>9</button>
-    <button data-k="back">⌫</button><button>0</button><button data-k="ok" class="ok">Guardar</button>
+    <button data-k="half">,5</button><button>0</button><button data-k="back">⌫</button>
+    <button data-k="ok" class="ok" style="grid-column:1/-1">Guardar</button>
   </div>
   <div class="extra">
     <button class="same" id="kpSame"></button>
@@ -231,6 +232,8 @@ const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOff
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const fmt=n=>(Math.round(n*10)/10).toFixed(1).replace('.',',');
 const fdate=d=>d.split('-').reverse().join('-');
+const fmtv=v=>String(Math.round(v*10)/10).replace('.',',');
+const toStage=(s,v)=>{const st=(v-s.v0)/s.inc+1;return Math.abs(st-Math.round(st))<1e-6&&st>=1?Math.round(st):0};
 
 const SEED_V=2;
 const SEED={"Sub-13": [], "Sub-14": [], "Sub-15": [], "Sub-16": [], "Sub-18": [], "Sub-20": [], "Proyección": []};
@@ -301,7 +304,7 @@ function renderGrid(){
     const r=s&&s.results[a.id];
     if(filter==='pen'&&r)continue;
     const cls=r?(r.stage?'done':'nr'):'';
-    const badge=r?(r.stage?r.stage:'NR'):'';
+    const badge=r?(r.stage?fmtv(vift(s,r.stage)):'NR'):'';
     html+=`<button class="ath ${cls}" data-id="${a.id}"><span>${esc(a.name)}</span>${badge!==''?`<i>${badge}</i>`:''}</button>`;
   }
   html+=`<button class="ath add" id="addAth">＋ Nuevo deportista</button>`;
@@ -321,27 +324,28 @@ $('#grid').onclick=e=>{
 let kp=null,lastStage=null;
 function openKp(id){
   const s=ses(false),r=s&&s.results[id];
-  kp={id,val:r&&r.stage?String(r.stage):''};
+  kp={id,val:r&&r.stage?fmtv(vift(s,r.stage)):''};
   $('#kpName').textContent=athName(id);
-  $('#kpSub').textContent=r?(r.stage?'Registrado: etapa '+r.stage+' · se reemplazará':'Marcado como No realizó'):'';
+  $('#kpSub').textContent=r?(r.stage?'Registrado: '+fmt(vift(s,r.stage))+' km/h · se reemplazará':'Marcado como No realizó'):'';
   $('#kpDel').style.visibility=r?'visible':'hidden';
   $('#kpSame').style.visibility=lastStage?'visible':'hidden';
-  $('#kpSame').textContent=lastStage?'= Etapa '+lastStage:'';
+  $('#kpSame').textContent=lastStage?'= '+fmtv(vift(s||S.cfg,lastStage))+' km/h':'';
   updDisp();$('#kpOv').classList.add('on');
 }
 function closeKp(){$('#kpOv').classList.remove('on');kp=null}
 function updDisp(){
   const d=$('#kpDisp'),s=ses(false)||{v0:S.cfg.v0,inc:S.cfg.inc};
-  if(kp.val){d.textContent=kp.val;d.classList.remove('ph');$('#kpSub').textContent='VIFT '+fmt(vift(s,+kp.val))+' km/h'}
-  else{d.textContent='Etapa';d.classList.add('ph')}
+  if(kp.val){d.textContent=kp.val+' km/h';d.classList.remove('ph');const st=toStage(s,+kp.val.replace(',','.'));$('#kpSub').textContent=st?'Etapa '+st:'Velocidad no válida'}
+  else{d.textContent='km/h';d.classList.add('ph')}
 }
 function shake(){const d=$('#kpDisp');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')}
 $('#keys').onclick=e=>{
   const b=e.target.closest('button');if(!b||!kp)return;
   const k=b.dataset.k;
-  if(k==='back')kp.val=kp.val.slice(0,-1);
-  else if(k==='ok')return commit(kp.val?+kp.val:0);
-  else if(kp.val.length<2)kp.val=(kp.val+b.textContent).replace(/^0+/,'');
+  if(k==='back')kp.val=kp.val.endsWith(',5')?kp.val.slice(0,-2):kp.val.slice(0,-1);
+  else if(k==='ok'){const s=ses(false)||S.cfg;return commit(kp.val?toStage(s,+kp.val.replace(',','.')):0)}
+  else if(k==='half'){if(kp.val&&!kp.val.includes(','))kp.val+=',5'}
+  else if(!kp.val.includes(',')&&kp.val.length<2)kp.val=(kp.val+b.textContent).replace(/^0+/,'');
   updDisp();
 };
 function commit(stage,nr){
@@ -350,7 +354,7 @@ function commit(stage,nr){
   s.results[id]={stage:nr?null:stage,name:athName(id),ts:new Date().toISOString()};
   if(!nr)lastStage=stage;
   save();closeKp();renderGrid();
-  toast(nr?`${athName(id)} · No realizó`:`${athName(id)} · Etapa ${stage} · ${fmt(vift(s,stage))} km/h`,()=>{
+  toast(nr?`${athName(id)} · No realizó`:`${athName(id)} · ${fmt(vift(s,stage))} km/h · Etapa ${stage}`,()=>{
     if(prev)s.results[id]=prev;else delete s.results[id];save();renderGrid();
   });
 }
