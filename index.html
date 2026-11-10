@@ -91,6 +91,14 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 .toast{position:fixed;left:50%;top:calc(120px + env(safe-area-inset-top));transform:translateX(-50%);background:#111;color:#fff;padding:12px 14px;border-radius:12px;z-index:30;display:none;align-items:center;gap:12px;font-size:15px;max-width:94vw;box-shadow:0 4px 18px #0004}
 .toast.on{display:flex}
 .toast button{color:var(--acc);font-weight:800}
+.ath small{display:block;font-size:12px;font-weight:600;color:#666;margin-top:3px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle;background:#ccc}
+.sg{background:#16a34a}.sy{background:#eab308}.sr{background:#dc2626}
+.ath.cg{background:#e3f6ec;border-color:#16a34a}.ath.cg i{background:#16a34a;color:#fff}
+.ath.cy{background:#fef6d8;border-color:#eab308}.ath.cy i{background:#eab308;color:#111}
+.ath.cr{background:#fde8e8;border-color:#dc2626}.ath.cr i{background:#dc2626;color:#fff}
+.kpprev{text-align:center;font-size:15px;font-weight:700;margin-top:4px;min-height:20px}
+.disp.cg{background:#dcfce7}.disp.cy{background:#fef9c3}.disp.cr{background:#fee2e2}
 </style>
 </head>
 <body>
@@ -139,7 +147,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
   </div>
   <div class="card">
     <h3>Agregar varios nombres</h3>
-    <p class="muted">Uno por línea. Puedes pegar una columna desde Excel. Si pegas 2 columnas (Nombre · Categoría), se asigna la categoría de la 2ª columna.</p>
+    <p class="muted">Uno por línea. Puedes pegar una columna desde Excel. Columnas opcionales separadas por ; o tabulación: Nombre ; Categoría ; VIFT anterior ; Categoría de referencia.</p>
     <textarea class="inp" id="bulk" placeholder="Juan Pérez&#10;Diego Rojas&#10;…"></textarea>
     <div class="row" style="margin-top:8px"><button class="btn acc" id="bulkAdd">Agregar a la nómina</button></div>
   </div>
@@ -164,6 +172,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
       <div style="flex:1"><label>Incremento por etapa (km/h)</label><input class="inp" id="cfgInc" type="number" step="0.5" inputmode="decimal"></div>
     </div>
     <p class="muted">VIFT = velocidad inicial + incremento × (etapa − 1). Protocolo estándar: 8 km/h y +0,5 km/h.</p>
+    <p class="muted" id="semInfo"></p>
   </div>
   <div class="card">
     <h3>Respaldo</h3>
@@ -191,6 +200,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 <!-- Teclado -->
 <div class="ov" id="kpOv"><div class="sheet">
   <div class="kpname" id="kpName"></div>
+  <div class="kpprev" id="kpPrev"></div>
   <div class="kpsub" id="kpSub"></div>
   <div class="disp ph" id="kpDisp">km/h</div>
   <div class="keys" id="keys">
@@ -234,6 +244,12 @@ const fmt=n=>(Math.round(n*10)/10).toFixed(1).replace('.',',');
 const fdate=d=>d.split('-').reverse().join('-');
 const fmtv=v=>String(Math.round(v*10)/10).replace('.',',');
 const toStage=(s,v)=>{const st=(v-s.v0)/s.inc+1;return Math.abs(st-Math.round(st))<1e-6&&st>=1?Math.round(st):0};
+// Semáforo club · política V5 · referencia de cierre · DE = ref×5,8 % · banda ±0,5 DE
+const REF={'Sub-13':19.041,'Sub-14':20.005,'Sub-15':20.881,'Sub-16':22.167,'Sub-18':22.167,'Sub-20':22.167,'Primer Equipo':22.167};
+const refOf=a=>REF[a&&a.ref]||REF[a&&a.cat]||REF['Sub-18'];
+const sem=(a,v)=>{if(v==null||isNaN(v))return '';const r=refOf(a),d=r*0.058*0.5;return v>=r+d?'g':(v<r-d?'r':'y')};
+const SEMTXT={g:'🟢',y:'🟡',r:'🔴','':''};
+const athOf=id=>S.athletes.find(a=>a.id===id);
 
 const SEED_V=2;
 const SEED={"Sub-13": [], "Sub-14": [], "Sub-15": [], "Sub-16": [], "Sub-18": [], "Sub-20": [], "Proyección": []};
@@ -303,9 +319,11 @@ function renderGrid(){
   for(const a of list){
     const r=s&&s.results[a.id];
     if(filter==='pen'&&r)continue;
-    const cls=r?(r.stage?'done':'nr'):'';
-    const badge=r?(r.stage?fmtv(vift(s,r.stage)):'NR'):'';
-    html+=`<button class="ath ${cls}" data-id="${a.id}"><span>${esc(a.name)}</span>${badge!==''?`<i>${badge}</i>`:''}</button>`;
+    const cv=r&&r.stage?vift(s,r.stage):null;
+    const cls=r?(r.stage?'done c'+sem(a,cv):'nr'):'';
+    const badge=r?(r.stage?fmtv(cv):'NR'):'';
+    const pv=a.prev!=null?`<small><span class="dot s${sem(a,a.prev)}"></span>Ant. ${fmtv(a.prev)}</small>`:'';
+    html+=`<button class="ath ${cls}" data-id="${a.id}"><span>${esc(a.name)}${pv}</span>${badge!==''?`<i>${badge}</i>`:''}</button>`;
   }
   html+=`<button class="ath add" id="addAth">＋ Nuevo deportista</button>`;
   if(!list.length)html=`<div class="empty" style="grid-column:1/-1">No hay deportistas en ${esc(S.cur.cat)}.<br>Agrega uno aquí o carga la nómina en <b>Nóminas</b>.</div>`+html;
@@ -326,6 +344,7 @@ function openKp(id){
   const s=ses(false),r=s&&s.results[id];
   kp={id,val:r&&r.stage?fmtv(vift(s,r.stage)):''};
   $('#kpName').textContent=athName(id);
+  const A=athOf(id);$('#kpPrev').innerHTML=A&&A.prev!=null?`Anterior: ${SEMTXT[sem(A,A.prev)]} ${fmt(A.prev)} km/h`:'<span style="color:#999;font-weight:500">Sin evaluación anterior</span>';
   $('#kpSub').textContent=r?(r.stage?'Registrado: '+fmt(vift(s,r.stage))+' km/h · se reemplazará':'Marcado como No realizó'):'';
   $('#kpDel').style.visibility=r?'visible':'hidden';
   $('#kpSame').style.visibility=lastStage?'visible':'hidden';
@@ -335,7 +354,9 @@ function openKp(id){
 function closeKp(){$('#kpOv').classList.remove('on');kp=null}
 function updDisp(){
   const d=$('#kpDisp'),s=ses(false)||{v0:S.cfg.v0,inc:S.cfg.inc};
-  if(kp.val){d.textContent=kp.val+' km/h';d.classList.remove('ph');const st=toStage(s,+kp.val.replace(',','.'));$('#kpSub').textContent=st?'Etapa '+st:'Velocidad no válida'}
+  d.classList.remove('cg','cy','cr');
+  if(kp.val){const v=+kp.val.replace(',','.'),A=athOf(kp.id),st=toStage(s,v);d.textContent=kp.val+' km/h';d.classList.remove('ph');if(st)d.classList.add('c'+sem(A,v));
+    let t=st?'Etapa '+st:'Velocidad no válida';if(st&&A&&A.prev!=null){const dv=v-A.prev;t+=' · '+(dv>0?'+':'')+fmt(dv)+' vs anterior'}$('#kpSub').textContent=t}
   else{d.textContent='km/h';d.classList.add('ph')}
 }
 function shake(){const d=$('#kpDisp');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')}
@@ -354,7 +375,7 @@ function commit(stage,nr){
   s.results[id]={stage:nr?null:stage,name:athName(id),ts:new Date().toISOString()};
   if(!nr)lastStage=stage;
   save();closeKp();renderGrid();
-  toast(nr?`${athName(id)} · No realizó`:`${athName(id)} · ${fmt(vift(s,stage))} km/h · Etapa ${stage}`,()=>{
+  toast(nr?`${athName(id)} · No realizó`:`${athName(id)} · ${SEMTXT[sem(athOf(id),vift(s,stage))]} ${fmt(vift(s,stage))} km/h · Etapa ${stage}`,()=>{
     if(prev)s.results[id]=prev;else delete s.results[id];save();renderGrid();
   });
 }
@@ -397,7 +418,7 @@ $('#toastUndo').onclick=()=>{if(tUndo)tUndo();tUndo=null;$('#toast').classList.r
 /* ---------- resultados ---------- */
 function sesList(){return Object.entries(S.sessions).filter(([k,s])=>Object.keys(s.results).length).sort((a,b)=>b[1].date.localeCompare(a[1].date)||a[1].cat.localeCompare(b[1].cat))}
 function rows(s){
-  return Object.entries(s.results).map(([id,r])=>({name:athName(id)||r.name,stage:r.stage,v:r.stage?vift(s,r.stage):null,ts:r.ts}))
+  return Object.entries(s.results).map(([id,r])=>{const A=athOf(id),v=r.stage?vift(s,r.stage):null;return{name:athName(id)||r.name,stage:r.stage,v,ts:r.ts,prev:A&&A.prev!=null?A.prev:null,c:A?sem(A,v):''}})
     .sort((a,b)=>(b.stage||0)-(a.stage||0)||a.name.localeCompare(b.name,'es'));
 }
 function renderRes(){
@@ -408,13 +429,13 @@ function renderRes(){
   const s=S.sessions[pick],R=rows(s),V=R.filter(r=>r.v).map(r=>r.v);
   const avg=V.length?V.reduce((a,b)=>a+b,0)/V.length:0;
   $('#resStats').innerHTML=[['n',V.length],['Prom. VIFT',V.length?fmt(avg):'–'],['Máx',V.length?fmt(Math.max(...V)):'–'],['Mín',V.length?fmt(Math.min(...V)):'–']].map(([l,v])=>`<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
-  $('#resTable').innerHTML=`<table><tr><th>#</th><th>Deportista</th><th style="text-align:right">Etapa</th><th style="text-align:right">VIFT</th></tr>${R.map((r,i)=>`<tr><td>${r.stage?i+1:''}</td><td>${esc(r.name)}</td><td class="n">${r.stage||'NR'}</td><td class="n">${r.v?fmt(r.v):'–'}</td></tr>`).join('')}</table>`;
+  $('#resTable').innerHTML=`<table><tr><th>#</th><th>Deportista</th><th style="text-align:right">Etapa</th><th style="text-align:right">VIFT</th><th style="text-align:right">Ant.</th><th style="text-align:right">Δ</th></tr>${R.map((r,i)=>`<tr><td>${r.stage?i+1:''}</td><td>${esc(r.name)}</td><td class="n">${r.stage||'NR'}</td><td class="n">${r.v?`<span class="dot s${r.c}"></span>`+fmt(r.v):'–'}</td><td class="n">${r.prev!=null?fmt(r.prev):'–'}</td><td class="n">${r.v&&r.prev!=null?(r.v-r.prev>0?'+':'')+fmt(r.v-r.prev):'–'}</td></tr>`).join('')}</table>`;
 }
 $('#resSel').onchange=renderRes;
 function csv(keys){
-  const L=['Fecha;Categoría;Deportista;Etapa;VIFT (km/h);Vel. inicial;Incremento;Hora registro'];
+  const L=['Fecha;Categoría;Deportista;Etapa;VIFT (km/h);Vel. inicial;Incremento;Hora registro;VIFT anterior;Δ (km/h);Clasificación club'];
   for(const k of keys){const s=S.sessions[k];for(const r of rows(s))
-    L.push([fdate(s.date),s.cat,r.name,r.stage||'NR',r.v?fmt(r.v):'',fmt(s.v0),String(s.inc).replace('.',','),r.ts?new Date(r.ts).toTimeString().slice(0,8):''].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';'));}
+    L.push([fdate(s.date),s.cat,r.name,r.stage||'NR',r.v?fmt(r.v):'',fmt(s.v0),String(s.inc).replace('.',','),r.ts?new Date(r.ts).toTimeString().slice(0,8):'',r.prev!=null?fmt(r.prev):'',r.v&&r.prev!=null?fmt(r.v-r.prev):'',({g:'Sobre lo esperado',y:'En lo esperado',r:'Bajo lo esperado'})[r.c]||''].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';'));}
   return '\ufeff'+L.join('\r\n');
 }
 function download(name,text,type){
@@ -446,16 +467,17 @@ $('#nomList').onclick=e=>{
   if(b.dataset.del){const a=S.athletes.find(x=>x.id===b.dataset.del);if(confirm('¿Quitar a '+a.name+' de la nómina?\n(Sus resultados guardados se conservan.)')){a.hidden=true;save();renderAll()}}
 };
 $('#bulkAdd').onclick=()=>{
-  let n=0;const lines=$('#bulk').value.split(/\r?\n/);
+  let n=0,np=0;const lines=$('#bulk').value.split(/\r?\n/);
   for(const l of lines){
-    const p=l.split(/\t|;/).map(x=>x.trim()).filter(Boolean);if(!p.length)continue;
+    const p=l.split(/\t|;/).map(x=>x.trim());if(!p[0])continue;
     const name=p[0].replace(/\s+/g,' ');let cat=S.cur.cat;
     if(p[1]){cat=p[1];if(!S.cats.includes(cat))S.cats.push(cat)}
-    const ex=S.athletes.find(a=>a.cat===cat&&a.name.toLowerCase()===name.toLowerCase());
-    if(ex){if(ex.hidden){ex.hidden=false;n++}continue}
-    S.athletes.push({id:uid(),name,cat});n++;
+    let ex=S.athletes.find(a=>a.cat===cat&&a.name.toLowerCase()===name.toLowerCase());
+    if(ex){ex.hidden=false}else{ex={id:uid(),name,cat};S.athletes.push(ex)}
+    n++;const pv=parseFloat((p[2]||'').replace(',','.'));if(pv>0){ex.prev=pv;np++}
+    if(p[3])ex.ref=p[3];
   }
-  save();$('#bulk').value='';renderAll();toast(n+' deportista(s) agregados');
+  save();$('#bulk').value='';renderAll();toast(n+' deportista(s) cargados'+(np?' · '+np+' con evaluación anterior':''));
 };
 $('#addCat').onclick=()=>{const c=$('#newCat').value.trim();if(!c||S.cats.includes(c))return;S.cats.push(c);$('#newCat').value='';save();renderAll()};
 $('#catList').onclick=e=>{
@@ -466,6 +488,7 @@ $('#catList').onclick=e=>{
 
 /* ---------- ajustes ---------- */
 function renderCfg(){
+  $('#semInfo').innerHTML='<b>Semáforo club (política V5, cierre):</b><br>'+Object.entries(REF).filter(([k])=>k!=='Primer Equipo').map(([k,r])=>{const d=r*0.029;return `${k}: 🔴 &lt; ${fmt(r-d)} · 🟡 ${fmt(r-d)}–${fmt(r+d)} · 🟢 ≥ ${fmt(r+d)}`}).join('<br>');
   $('#cfgDate').value=S.cur.date;$('#cfgV0').value=S.cfg.v0;$('#cfgInc').value=S.cfg.inc;
   const nR=Object.values(S.sessions).reduce((a,s)=>a+Object.keys(s.results).length,0);
   $('#stInfo').textContent=`${S.athletes.filter(a=>!a.hidden).length} deportistas · ${sesList().length} sesiones · ${nR} registros guardados.`;
