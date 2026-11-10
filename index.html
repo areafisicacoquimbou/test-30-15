@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Test 30-15">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Test 30-15 IFT · Registro</title>
+<style>
+:root{--bg:#f4f4f1;--card:#fff;--ink:#111;--mut:#666;--acc:#f5c400;--ok:#0f8a4b;--okbg:#e3f6ec;--nr:#8a8a8a;--bad:#c62828;--line:#ddd}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+input,select,textarea{font:inherit;font-size:16px}
+header{position:sticky;top:0;z-index:5;background:#111;color:#fff;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+.top{display:flex;align-items:center;gap:10px}
+.top h1{font-size:17px;margin:0;flex:1;letter-spacing:.3px}
+.top h1 b{color:var(--acc)}
+.saved{font-size:12px;color:#9be3b9;white-space:nowrap}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:10px 16px;border-radius:999px;background:#2a2a2a;color:#fff;font-weight:700;font-size:15px}
+.chip.on{background:var(--acc);color:#111}
+.bar{display:flex;align-items:center;gap:8px;padding:10px 12px;font-size:14px;color:var(--mut);flex-wrap:wrap}
+.bar strong{color:var(--ink);font-size:16px}
+.seg{display:flex;background:#e4e4e0;border-radius:10px;padding:3px;margin-left:auto}
+.seg button{padding:7px 12px;border-radius:8px;font-weight:600;font-size:14px}
+.seg button.on{background:#fff;box-shadow:0 1px 2px #0002}
+main{padding:0 10px calc(90px + env(safe-area-inset-bottom))}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px}
+.ath{display:flex;align-items:center;gap:8px;min-height:66px;padding:10px 12px;background:var(--card);border:2px solid var(--line);border-radius:14px;text-align:left;font-weight:700;font-size:16px;line-height:1.15}
+.ath span{flex:1;word-break:break-word}
+.ath i{font-style:normal;min-width:42px;text-align:center;font-size:22px;font-weight:800;border-radius:10px;padding:4px 6px}
+.ath.done{background:var(--okbg);border-color:var(--ok)}
+.ath.done i{background:var(--ok);color:#fff}
+.ath.nr{background:#eee;border-color:#bbb;color:#666}
+.ath.nr i{background:var(--nr);color:#fff;font-size:15px}
+.ath.add{justify-content:center;border-style:dashed;color:var(--mut);font-size:16px}
+.ath:active{transform:scale(.97)}
+.empty{padding:30px 16px;text-align:center;color:var(--mut)}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:#111;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:12px 4px 10px;color:#aaa;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button b{font-size:20px;line-height:1}
+nav button.on{color:var(--acc)}
+.view{display:none}.view.on{display:block}
+.card{background:var(--card);border-radius:14px;padding:14px;margin:10px 0;border:1px solid var(--line)}
+.card h3{margin:0 0 10px;font-size:16px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{padding:12px 16px;border-radius:12px;background:#111;color:#fff;font-weight:700}
+.btn.sec{background:#e4e4e0;color:#111}
+.btn.acc{background:var(--acc);color:#111}
+.btn.red{background:var(--bad)}
+.btn.full{width:100%}
+label{font-size:13px;color:var(--mut);display:block;margin:8px 0 4px}
+.inp{width:100%;padding:12px;border:2px solid var(--line);border-radius:10px;background:#fff}
+textarea.inp{min-height:130px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:9px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--mut);text-transform:uppercase}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0}
+.stat{background:#f4f4f1;border-radius:10px;padding:8px;text-align:center}
+.stat b{display:block;font-size:20px}.stat small{color:var(--mut);font-size:11px}
+.li{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.li span{flex:1;font-weight:600}
+.li button{padding:8px 10px;border-radius:8px;background:#eee;font-size:14px}
+.muted{color:var(--mut);font-size:13px}
+/* sheet */
+.ov{position:fixed;inset:0;background:#0008;z-index:20;display:none;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
+.sheet{width:100%;max-width:520px;background:#fff;border-radius:20px 20px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));animation:up .15s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.kpname{font-size:20px;font-weight:800;text-align:center;margin:2px 0}
+.kpsub{text-align:center;color:var(--mut);font-size:13px;min-height:18px}
+.disp{margin:8px 0 10px;text-align:center;font-size:56px;font-weight:800;height:76px;line-height:76px;border-radius:14px;background:#f4f4f1;font-variant-numeric:tabular-nums}
+.disp.ph{color:#bbb}
+.disp.shake{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.keys button{height:62px;border-radius:14px;background:#efefeb;font-size:28px;font-weight:700}
+.keys button:active{background:#ddd}
+.keys .ok{background:var(--ok);color:#fff;font-size:22px}
+.extra{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.extra button{padding:13px 8px;border-radius:12px;background:#e4e4e0;font-weight:700;font-size:15px}
+.extra .same{background:var(--acc)}
+.extra .del{color:var(--bad)}
+.toast{position:fixed;left:50%;top:calc(120px + env(safe-area-inset-top));transform:translateX(-50%);background:#111;color:#fff;padding:12px 14px;border-radius:12px;z-index:30;display:none;align-items:center;gap:12px;font-size:15px;max-width:94vw;box-shadow:0 4px 18px #0004}
+.toast.on{display:flex}
+.toast button{color:var(--acc);font-weight:800}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <h1>Test <b>30-15</b> IFT</h1>
+    <div class="saved" id="saved">● Guardado</div>
+  </div>
+  <div class="chips" id="chips"></div>
+</header>
+
+<!-- ===== REGISTRO ===== -->
+<section class="view on" id="v-reg">
+  <div class="bar">
+    <span id="sesInfo"></span>
+    <div class="seg"><button id="fAll" class="on">Todos</button><button id="fPen">Pendientes</button></div>
+  </div>
+  <main><div class="grid" id="grid"></div></main>
+</section>
+
+<!-- ===== RESULTADOS ===== -->
+<section class="view" id="v-res"><main>
+  <div class="card">
+    <label>Sesión</label>
+    <select class="inp" id="resSel"></select>
+    <div class="stats" id="resStats"></div>
+    <div id="resTable"></div>
+  </div>
+  <div class="card">
+    <h3>Exportar</h3>
+    <div class="row">
+      <button class="btn acc" id="expSes">CSV de esta sesión</button>
+      <button class="btn sec" id="expAll">CSV de todo</button>
+      <button class="btn sec" id="shareSes">Compartir…</button>
+    </div>
+    <p class="muted">El CSV abre directo en Excel (separador ; y decimales con coma).</p>
+  </div>
+</main></section>
+
+<!-- ===== NÓMINAS ===== -->
+<section class="view" id="v-nom"><main>
+  <div class="card">
+    <h3>Nómina de <span id="nomCat"></span></h3>
+    <div id="nomList"></div>
+  </div>
+  <div class="card">
+    <h3>Agregar varios nombres</h3>
+    <p class="muted">Uno por línea. Puedes pegar una columna desde Excel. Si pegas 2 columnas (Nombre · Categoría), se asigna la categoría de la 2ª columna.</p>
+    <textarea class="inp" id="bulk" placeholder="Juan Pérez&#10;Diego Rojas&#10;…"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn acc" id="bulkAdd">Agregar a la nómina</button></div>
+  </div>
+  <div class="card">
+    <h3>Categorías</h3>
+    <div id="catList"></div>
+    <div class="row" style="margin-top:8px">
+      <input class="inp" id="newCat" placeholder="Nueva categoría (ej. Sub-19)" style="flex:1">
+      <button class="btn" id="addCat">Agregar</button>
+    </div>
+  </div>
+</main></section>
+
+<!-- ===== AJUSTES ===== -->
+<section class="view" id="v-cfg"><main>
+  <div class="card">
+    <h3>Sesión</h3>
+    <label>Fecha de la evaluación</label>
+    <input type="date" class="inp" id="cfgDate">
+    <div class="row">
+      <div style="flex:1"><label>Velocidad inicial (km/h)</label><input class="inp" id="cfgV0" type="number" step="0.5" inputmode="decimal"></div>
+      <div style="flex:1"><label>Incremento por etapa (km/h)</label><input class="inp" id="cfgInc" type="number" step="0.5" inputmode="decimal"></div>
+    </div>
+    <p class="muted">VIFT = velocidad inicial + incremento × (etapa − 1). Protocolo estándar: 8 km/h y +0,5 km/h.</p>
+  </div>
+  <div class="card">
+    <h3>Respaldo</h3>
+    <p class="muted">Los datos se guardan en este teléfono con cada toque. Descarga un respaldo al terminar la jornada.</p>
+    <div class="row">
+      <button class="btn acc" id="bkExp">Descargar respaldo</button>
+      <button class="btn sec" id="bkImpBtn">Restaurar respaldo</button>
+      <input type="file" id="bkImp" accept=".json,application/json" hidden>
+    </div>
+    <p class="muted" id="stInfo"></p>
+  </div>
+  <div class="card">
+    <h3>Zona de peligro</h3>
+    <button class="btn red" id="wipe">Borrar todos los datos</button>
+  </div>
+</main></section>
+
+<nav>
+  <button data-v="reg" class="on"><b>✎</b>Registro</button>
+  <button data-v="res"><b>▤</b>Resultados</button>
+  <button data-v="nom"><b>☰</b>Nóminas</button>
+  <button data-v="cfg"><b>⚙</b>Ajustes</button>
+</nav>
+
+<!-- Teclado -->
+<div class="ov" id="kpOv"><div class="sheet">
+  <div class="kpname" id="kpName"></div>
+  <div class="kpsub" id="kpSub"></div>
+  <div class="disp ph" id="kpDisp">Etapa</div>
+  <div class="keys" id="keys">
+    <button>1</button><button>2</button><button>3</button>
+    <button>4</button><button>5</button><button>6</button>
+    <button>7</button><button>8</button><button>9</button>
+    <button data-k="back">⌫</button><button>0</button><button data-k="ok" class="ok">Guardar</button>
+  </div>
+  <div class="extra">
+    <button class="same" id="kpSame"></button>
+    <button id="kpNR">No realizó</button>
+    <button id="kpCancel">Cancelar</button>
+    <button class="del" id="kpDel">Borrar registro</button>
+  </div>
+</div></div>
+
+<!-- Nuevo deportista -->
+<div class="ov" id="newOv"><div class="sheet">
+  <div class="kpname">Nuevo deportista</div>
+  <label>Nombre</label>
+  <input class="inp" id="newName" autocomplete="off" placeholder="Nombre y apellido">
+  <label>Categoría</label>
+  <select class="inp" id="newCatSel"></select>
+  <div class="extra" style="margin-top:12px">
+    <button id="newCancel">Cancelar</button>
+    <button class="same" id="newOk">Guardar y registrar</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"><span id="toastTxt"></span><button id="toastUndo">Deshacer</button></div>
+
+<script>
+'use strict';
+const KEY='ift3015_data_v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const fmt=n=>(Math.round(n*10)/10).toFixed(1).replace('.',',');
+const fdate=d=>d.split('-').reverse().join('-');
+
+const SEED_V=2;
+const SEED={"Sub-13": [], "Sub-14": [], "Sub-15": [], "Sub-16": [], "Sub-18": [], "Sub-20": [], "Proyección": []};
+function defaults(){return{cats:Object.keys(SEED),athletes:[],sessions:{},cfg:{v0:8,inc:0.5},cur:{cat:'Sub-13',date:today()},seedV:0}}
+function applySeed(d){
+  if((d.seedV||0)>=SEED_V)return d;
+  // categorías: las de la nómina oficial + cualquier categoría propia que tenga deportistas (sin 'Primer Equipo')
+  const extra=d.cats.filter(c=>!SEED[c]&&c!=='Primer Equipo'&&d.athletes.some(a=>a.cat===c&&!a.hidden));
+  d.athletes.forEach(a=>{if(a.cat==='Primer Equipo')a.hidden=true});
+  d.cats=[...Object.keys(SEED),...extra];
+  for(const [cat,names] of Object.entries(SEED))for(const name of names){
+    const ex=d.athletes.find(a=>a.cat===cat&&a.name.toLowerCase()===name.toLowerCase());
+    if(ex)ex.hidden=false;else d.athletes.push({id:uid(),name,cat});
+  }
+  if(!d.cats.includes(d.cur.cat))d.cur.cat=d.cats[0];
+  d.seedV=SEED_V;return d;
+}
+function load(){
+  for(const k of [KEY,KEY+'_bak']){
+    try{const d=JSON.parse(localStorage.getItem(k));if(d&&d.cats&&d.athletes&&d.sessions)return d}catch(e){}
+  }
+  return null;
+}
+let S=applySeed(load()||defaults());
+S.cur.date=today(); // cada vez que se abre la app parte con la fecha del día
+setTimeout(save,0);
+let lastSave=0;
+function save(){
+  try{
+    const prev=localStorage.getItem(KEY);
+    if(prev)localStorage.setItem(KEY+'_bak',prev);
+    localStorage.setItem(KEY,JSON.stringify(S));
+    lastSave=Date.now();
+    const t=new Date();$('#saved').textContent='● Guardado '+t.toTimeString().slice(0,8);$('#saved').style.color='#9be3b9';
+  }catch(e){
+    $('#saved').textContent='⚠ NO SE PUDO GUARDAR';$('#saved').style.color='#ff8a80';
+    alert('Error al guardar en el teléfono: '+e.message+'\nDescarga un respaldo desde Ajustes.');
+  }
+}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+
+const sesKey=(date,cat)=>date+'|'+cat;
+function ses(create){
+  const k=sesKey(S.cur.date,S.cur.cat);
+  if(!S.sessions[k]&&create)S.sessions[k]={date:S.cur.date,cat:S.cur.cat,v0:S.cfg.v0,inc:S.cfg.inc,results:{}};
+  return S.sessions[k];
+}
+const vift=(s,stage)=>s.v0+s.inc*(stage-1);
+const athName=id=>{const a=S.athletes.find(a=>a.id===id);return a?a.name:null};
+
+/* ---------- render registro ---------- */
+let filter='all';
+function renderChips(){
+  if(!S.cats.includes(S.cur.cat))S.cur.cat=S.cats[0]||'';
+  $('#chips').innerHTML=S.cats.map(c=>`<button class="chip ${c===S.cur.cat?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+}
+function catAthletes(cat){
+  const s=S.sessions[sesKey(S.cur.date,cat)];
+  return S.athletes.filter(a=>a.cat===cat&&(!a.hidden||(s&&s.results[a.id])))
+    .sort((a,b)=>a.name.localeCompare(b.name,'es'));
+}
+function renderGrid(){
+  const s=ses(false),list=catAthletes(S.cur.cat);
+  const done=list.filter(a=>s&&s.results[a.id]).length;
+  $('#sesInfo').innerHTML=`<strong>${esc(S.cur.cat)}</strong> · ${fdate(S.cur.date)} · ${done}/${list.length} registrados`;
+  let html='';
+  for(const a of list){
+    const r=s&&s.results[a.id];
+    if(filter==='pen'&&r)continue;
+    const cls=r?(r.stage?'done':'nr'):'';
+    const badge=r?(r.stage?r.stage:'NR'):'';
+    html+=`<button class="ath ${cls}" data-id="${a.id}"><span>${esc(a.name)}</span>${badge!==''?`<i>${badge}</i>`:''}</button>`;
+  }
+  html+=`<button class="ath add" id="addAth">＋ Nuevo deportista</button>`;
+  if(!list.length)html=`<div class="empty" style="grid-column:1/-1">No hay deportistas en ${esc(S.cur.cat)}.<br>Agrega uno aquí o carga la nómina en <b>Nóminas</b>.</div>`+html;
+  $('#grid').innerHTML=html;
+}
+$('#chips').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;S.cur.cat=b.dataset.c;save();renderAll()};
+$('#fAll').onclick=()=>{filter='all';$('#fAll').classList.add('on');$('#fPen').classList.remove('on');renderGrid()};
+$('#fPen').onclick=()=>{filter='pen';$('#fPen').classList.add('on');$('#fAll').classList.remove('on');renderGrid()};
+$('#grid').onclick=e=>{
+  const b=e.target.closest('.ath');if(!b)return;
+  if(b.id==='addAth')return openNew();
+  openKp(b.dataset.id);
+};
+
+/* ---------- teclado ---------- */
+let kp=null,lastStage=null;
+function openKp(id){
+  const s=ses(false),r=s&&s.results[id];
+  kp={id,val:r&&r.stage?String(r.stage):''};
+  $('#kpName').textContent=athName(id);
+  $('#kpSub').textContent=r?(r.stage?'Registrado: etapa '+r.stage+' · se reemplazará':'Marcado como No realizó'):'';
+  $('#kpDel').style.visibility=r?'visible':'hidden';
+  $('#kpSame').style.visibility=lastStage?'visible':'hidden';
+  $('#kpSame').textContent=lastStage?'= Etapa '+lastStage:'';
+  updDisp();$('#kpOv').classList.add('on');
+}
+function closeKp(){$('#kpOv').classList.remove('on');kp=null}
+function updDisp(){
+  const d=$('#kpDisp'),s=ses(false)||{v0:S.cfg.v0,inc:S.cfg.inc};
+  if(kp.val){d.textContent=kp.val;d.classList.remove('ph');$('#kpSub').textContent='VIFT '+fmt(vift(s,+kp.val))+' km/h'}
+  else{d.textContent='Etapa';d.classList.add('ph')}
+}
+function shake(){const d=$('#kpDisp');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake')}
+$('#keys').onclick=e=>{
+  const b=e.target.closest('button');if(!b||!kp)return;
+  const k=b.dataset.k;
+  if(k==='back')kp.val=kp.val.slice(0,-1);
+  else if(k==='ok')return commit(kp.val?+kp.val:0);
+  else if(kp.val.length<2)kp.val=(kp.val+b.textContent).replace(/^0+/,'');
+  updDisp();
+};
+function commit(stage,nr){
+  if(!nr&&(!stage||stage<1)){shake();return}
+  const s=ses(true),id=kp.id,prev=s.results[id]?{...s.results[id]}:null;
+  s.results[id]={stage:nr?null:stage,name:athName(id),ts:new Date().toISOString()};
+  if(!nr)lastStage=stage;
+  save();closeKp();renderGrid();
+  toast(nr?`${athName(id)} · No realizó`:`${athName(id)} · Etapa ${stage} · ${fmt(vift(s,stage))} km/h`,()=>{
+    if(prev)s.results[id]=prev;else delete s.results[id];save();renderGrid();
+  });
+}
+$('#kpSame').onclick=()=>kp&&lastStage&&commit(lastStage);
+$('#kpNR').onclick=()=>kp&&commit(null,true);
+$('#kpCancel').onclick=closeKp;
+$('#kpDel').onclick=()=>{
+  if(!kp)return;const s=ses(false),id=kp.id,prev=s.results[id];
+  delete s.results[id];save();closeKp();renderGrid();
+  toast(`Registro de ${athName(id)} borrado`,()=>{s.results[id]=prev;save();renderGrid()});
+};
+$('#kpOv').onclick=e=>{if(e.target.id==='kpOv')closeKp()};
+
+/* ---------- nuevo deportista ---------- */
+function openNew(){
+  $('#newName').value='';
+  $('#newCatSel').innerHTML=S.cats.map(c=>`<option ${c===S.cur.cat?'selected':''}>${esc(c)}</option>`).join('');
+  $('#newOv').classList.add('on');setTimeout(()=>$('#newName').focus(),100);
+}
+$('#newCancel').onclick=()=>$('#newOv').classList.remove('on');
+$('#newOk').onclick=()=>{
+  const n=$('#newName').value.trim().replace(/\s+/g,' ');if(!n){$('#newName').focus();return}
+  const cat=$('#newCatSel').value;
+  let a=S.athletes.find(x=>x.cat===cat&&x.name.toLowerCase()===n.toLowerCase());
+  if(a)a.hidden=false;else{a={id:uid(),name:n,cat,added:'manual'};S.athletes.push(a)}
+  save();$('#newOv').classList.remove('on');
+  if(cat!==S.cur.cat){S.cur.cat=cat;renderChips()}
+  renderGrid();openKp(a.id);
+};
+$('#newName').onkeydown=e=>{if(e.key==='Enter')$('#newOk').click()};
+
+/* ---------- toast ---------- */
+let tT=null,tUndo=null;
+function toast(msg,undo){
+  $('#toastTxt').textContent=msg;tUndo=undo;$('#toastUndo').style.display=undo?'':'none';
+  $('#toast').classList.add('on');clearTimeout(tT);tT=setTimeout(()=>$('#toast').classList.remove('on'),4000);
+}
+$('#toastUndo').onclick=()=>{if(tUndo)tUndo();tUndo=null;$('#toast').classList.remove('on')};
+
+/* ---------- resultados ---------- */
+function sesList(){return Object.entries(S.sessions).filter(([k,s])=>Object.keys(s.results).length).sort((a,b)=>b[1].date.localeCompare(a[1].date)||a[1].cat.localeCompare(b[1].cat))}
+function rows(s){
+  return Object.entries(s.results).map(([id,r])=>({name:athName(id)||r.name,stage:r.stage,v:r.stage?vift(s,r.stage):null,ts:r.ts}))
+    .sort((a,b)=>(b.stage||0)-(a.stage||0)||a.name.localeCompare(b.name,'es'));
+}
+function renderRes(){
+  const L=sesList(),cur=sesKey(S.cur.date,S.cur.cat),sel=$('#resSel').value;
+  if(!L.length){$('#resSel').innerHTML='<option>Sin registros aún</option>';$('#resStats').innerHTML='';$('#resTable').innerHTML='';return}
+  const pick=L.find(([k])=>k===sel)?sel:(L.find(([k])=>k===cur)?cur:L[0][0]);
+  $('#resSel').innerHTML=L.map(([k,s])=>`<option value="${esc(k)}" ${k===pick?'selected':''}>${fdate(s.date)} · ${esc(s.cat)} (${Object.keys(s.results).length})</option>`).join('');
+  const s=S.sessions[pick],R=rows(s),V=R.filter(r=>r.v).map(r=>r.v);
+  const avg=V.length?V.reduce((a,b)=>a+b,0)/V.length:0;
+  $('#resStats').innerHTML=[['n',V.length],['Prom. VIFT',V.length?fmt(avg):'–'],['Máx',V.length?fmt(Math.max(...V)):'–'],['Mín',V.length?fmt(Math.min(...V)):'–']].map(([l,v])=>`<div class="stat"><b>${v}</b><small>${l}</small></div>`).join('');
+  $('#resTable').innerHTML=`<table><tr><th>#</th><th>Deportista</th><th style="text-align:right">Etapa</th><th style="text-align:right">VIFT</th></tr>${R.map((r,i)=>`<tr><td>${r.stage?i+1:''}</td><td>${esc(r.name)}</td><td class="n">${r.stage||'NR'}</td><td class="n">${r.v?fmt(r.v):'–'}</td></tr>`).join('')}</table>`;
+}
+$('#resSel').onchange=renderRes;
+function csv(keys){
+  const L=['Fecha;Categoría;Deportista;Etapa;VIFT (km/h);Vel. inicial;Incremento;Hora registro'];
+  for(const k of keys){const s=S.sessions[k];for(const r of rows(s))
+    L.push([fdate(s.date),s.cat,r.name,r.stage||'NR',r.v?fmt(r.v):'',fmt(s.v0),String(s.inc).replace('.',','),r.ts?new Date(r.ts).toTimeString().slice(0,8):''].map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';'));}
+  return '\ufeff'+L.join('\r\n');
+}
+function download(name,text,type){
+  const b=new Blob([text],{type}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);
+}
+const slug=s=>s.replace(/[^\w-]+/g,'_');
+$('#expSes').onclick=()=>{const k=$('#resSel').value,s=S.sessions[k];if(!s)return;download(`30-15_${slug(s.cat)}_${s.date}.csv`,csv([k]),'text/csv;charset=utf-8')};
+$('#expAll').onclick=()=>{const L=sesList();if(!L.length)return;download(`30-15_todo_${today()}.csv`,csv(L.map(x=>x[0])),'text/csv;charset=utf-8')};
+$('#shareSes').onclick=async()=>{
+  const k=$('#resSel').value,s=S.sessions[k];if(!s)return;
+  const name=`30-15_${slug(s.cat)}_${s.date}.csv`,f=new File([csv([k])],name,{type:'text/csv'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:name})}catch(e){}}
+  else{const t=`Test 30-15 · ${s.cat} · ${fdate(s.date)}\n`+rows(s).map(r=>`${r.name}: ${r.stage?'E'+r.stage+' · '+fmt(r.v)+' km/h':'NR'}`).join('\n');
+    if(navigator.share){try{await navigator.share({text:t})}catch(e){}}else{download(name,csv([k]),'text/csv')}}
+};
+
+/* ---------- nóminas ---------- */
+function renderNom(){
+  $('#nomCat').textContent=S.cur.cat;
+  const L=S.athletes.filter(a=>a.cat===S.cur.cat&&!a.hidden).sort((a,b)=>a.name.localeCompare(b.name,'es'));
+  $('#nomList').innerHTML=L.length?L.map(a=>`<div class="li"><span>${esc(a.name)}</span><button data-ren="${a.id}">✎ Editar</button><button data-mov="${a.id}">⇄</button><button data-del="${a.id}">✕</button></div>`).join(''):'<p class="muted">Sin deportistas. Pégalos abajo.</p>';
+  $('#catList').innerHTML=S.cats.map((c,i)=>`<div class="li"><span>${esc(c)} <small class="muted">(${S.athletes.filter(a=>a.cat===c&&!a.hidden).length})</small></span><button data-up="${i}">↑</button><button data-dc="${i}">✕</button></div>`).join('');
+}
+$('#nomList').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.ren){const a=S.athletes.find(x=>x.id===b.dataset.ren);const n=prompt('Nombre:',a.name);if(n&&n.trim()){a.name=n.trim();save();renderAll()}}
+  if(b.dataset.mov){const a=S.athletes.find(x=>x.id===b.dataset.mov);const c=prompt('Mover a categoría:\n'+S.cats.join(' · '),a.cat);if(c&&S.cats.includes(c.trim())){a.cat=c.trim();save();renderAll()}else if(c)alert('Categoría no existe')}
+  if(b.dataset.del){const a=S.athletes.find(x=>x.id===b.dataset.del);if(confirm('¿Quitar a '+a.name+' de la nómina?\n(Sus resultados guardados se conservan.)')){a.hidden=true;save();renderAll()}}
+};
+$('#bulkAdd').onclick=()=>{
+  let n=0;const lines=$('#bulk').value.split(/\r?\n/);
+  for(const l of lines){
+    const p=l.split(/\t|;/).map(x=>x.trim()).filter(Boolean);if(!p.length)continue;
+    const name=p[0].replace(/\s+/g,' ');let cat=S.cur.cat;
+    if(p[1]){cat=p[1];if(!S.cats.includes(cat))S.cats.push(cat)}
+    const ex=S.athletes.find(a=>a.cat===cat&&a.name.toLowerCase()===name.toLowerCase());
+    if(ex){if(ex.hidden){ex.hidden=false;n++}continue}
+    S.athletes.push({id:uid(),name,cat});n++;
+  }
+  save();$('#bulk').value='';renderAll();toast(n+' deportista(s) agregados');
+};
+$('#addCat').onclick=()=>{const c=$('#newCat').value.trim();if(!c||S.cats.includes(c))return;S.cats.push(c);$('#newCat').value='';save();renderAll()};
+$('#catList').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.up){const i=+b.dataset.up;if(i>0){[S.cats[i-1],S.cats[i]]=[S.cats[i],S.cats[i-1]];save();renderAll()}}
+  if(b.dataset.dc){const c=S.cats[+b.dataset.dc];if(S.athletes.some(a=>a.cat===c&&!a.hidden))return alert('La categoría tiene deportistas. Quítalos o muévelos primero.');if(confirm('¿Eliminar categoría '+c+'?')){S.cats.splice(+b.dataset.dc,1);save();renderAll()}}
+};
+
+/* ---------- ajustes ---------- */
+function renderCfg(){
+  $('#cfgDate').value=S.cur.date;$('#cfgV0').value=S.cfg.v0;$('#cfgInc').value=S.cfg.inc;
+  const nR=Object.values(S.sessions).reduce((a,s)=>a+Object.keys(s.results).length,0);
+  $('#stInfo').textContent=`${S.athletes.filter(a=>!a.hidden).length} deportistas · ${sesList().length} sesiones · ${nR} registros guardados.`;
+}
+$('#cfgDate').onchange=e=>{if(e.target.value){S.cur.date=e.target.value;save();renderAll()}};
+$('#cfgV0').onchange=e=>{const v=parseFloat(String(e.target.value).replace(',','.'));if(v>0){S.cfg.v0=v;const s=ses(false);if(s)s.v0=v;save()}};
+$('#cfgInc').onchange=e=>{const v=parseFloat(String(e.target.value).replace(',','.'));if(v>0){S.cfg.inc=v;const s=ses(false);if(s)s.inc=v;save()}};
+$('#bkExp').onclick=()=>download(`respaldo_30-15_${today()}.json`,JSON.stringify(S,null,1),'application/json');
+$('#bkImpBtn').onclick=()=>$('#bkImp').click();
+$('#bkImp').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d.cats||!d.athletes||!d.sessions)throw 0;
+    if(confirm('¿Reemplazar los datos actuales por el respaldo?')){download(`antes_de_restaurar_${today()}.json`,JSON.stringify(S),'application/json');S=d;S.cur.date=today();save();renderAll();toast('Respaldo restaurado')}}
+    catch(x){alert('Archivo de respaldo no válido')}e.target.value=''};
+  rd.readAsText(f);
+};
+$('#wipe').onclick=()=>{if(confirm('¿Borrar TODO (nóminas y resultados)?')&&confirm('Se descargará un respaldo antes de borrar. ¿Continuar?')){download(`respaldo_antes_de_borrar_${today()}.json`,JSON.stringify(S),'application/json');S=defaults();save();renderAll()}};
+
+/* ---------- navegación ---------- */
+let view='reg';
+document.querySelector('nav').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;view=b.dataset.v;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+view));
+  renderAll();window.scrollTo(0,0);
+};
+function renderAll(){renderChips();if(view==='reg')renderGrid();if(view==='res')renderRes();if(view==='nom')renderNom();if(view==='cfg')renderCfg()}
+renderAll();
+
+// funcionamiento offline (cuando se instala desde un servidor)
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+// guardar también al pasar a segundo plano
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+</script>
+</body>
+</html>
